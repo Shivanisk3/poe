@@ -1,28 +1,26 @@
 pipeline {
-
-agent any
-
-stages {
-
-stage('Build') {
-
-steps {
-
-
-  bat 'javac Prime.java'
-  bat 'java -version'
-
-}
-
-}
-
-stage('Run') {
-
-steps {
-
-
-  bat 'java Prime'
-}
-}
-}
+  environment {
+    registry = "shivanisk/dockerjen"
+    registryCredential = 'shivani_id'
+    dockerImage = ''
+  }
+  agent any
+  stages {
+    stage('Build image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+    stage('Deploy Image') {
+      steps{
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+          }
+        }
+      }
+    }
+  }
 }
